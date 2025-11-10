@@ -25,6 +25,7 @@ mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
 mainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 mainFrame.BorderSizePixel = 0
+mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
 
 -- Adicionar bordas arredondadas
@@ -40,6 +41,19 @@ uiGradient.Color = ColorSequence.new{
 }
 uiGradient.Rotation = 45 -- Diagonal
 uiGradient.Parent = mainFrame
+
+-- Animar o gradiente em movimento contínuo
+spawn(function()
+	local rotation = 45
+	while mainFrame and mainFrame.Parent do
+		wait(0.05)
+		rotation = rotation + 0.2
+		if rotation >= 405 then
+			rotation = 45
+		end
+		uiGradient.Rotation = rotation
+	end
+end)
 
 -- Criar sombras nas bordas da tela
 -- Sombra superior
