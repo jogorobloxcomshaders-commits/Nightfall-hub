@@ -36,8 +36,10 @@ uiCorner.Parent = mainFrame
 -- Adicionar gradiente diagonal (roxo claro → roxo escuro)
 local uiGradient = Instance.new("UIGradient")
 uiGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(130, 80, 200)), -- Roxo médio (esquerda)
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 50, 180))   -- Roxo escuro (direita)
+    -- Roxo Médio (8300C4 - 131, 0, 196)
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(131, 0, 196)), 
+    -- Roxo Escuro (4C00A4 - 76, 0, 164)
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(76, 0, 164))   
 }
 uiGradient.Rotation = 45 -- Diagonal
 uiGradient.Parent = mainFrame
@@ -56,19 +58,24 @@ spawn(function()
 end)
 
 -- Criar sombras nas bordas da tela
+-- Roxo Escuro (33007B - 51, 0, 123)
+local DARK_PURPLE = Color3.fromRGB(51, 0, 123)
+-- Roxo Médio (4C00A4 - 76, 0, 164)
+local MEDIUM_PURPLE = Color3.fromRGB(76, 0, 164)
+
 -- Sombra superior
 local topShadow = Instance.new("Frame")
 topShadow.Name = "TopShadow"
 topShadow.Size = UDim2.new(1, 0, 0, 60)
 topShadow.Position = UDim2.new(0, 0, 0, 0)
-topShadow.BackgroundColor3 = Color3.fromRGB(100, 50, 180)
+topShadow.BackgroundColor3 = DARK_PURPLE -- Cor de base para a sombra
 topShadow.BorderSizePixel = 0
 topShadow.Parent = screenGui
 
 local topGradient = Instance.new("UIGradient")
 topGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 50, 180)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 50, 180))
+    ColorSequenceKeypoint.new(0, DARK_PURPLE),
+    ColorSequenceKeypoint.new(1, DARK_PURPLE)
 }
 topGradient.Transparency = NumberSequence.new{
     NumberSequenceKeypoint.new(0, 0.3),
@@ -82,14 +89,14 @@ local bottomShadow = Instance.new("Frame")
 bottomShadow.Name = "BottomShadow"
 bottomShadow.Size = UDim2.new(1, 0, 0, 60)
 bottomShadow.Position = UDim2.new(0, 0, 1, -60)
-bottomShadow.BackgroundColor3 = Color3.fromRGB(100, 50, 180)
+bottomShadow.BackgroundColor3 = DARK_PURPLE -- Cor de base para a sombra
 bottomShadow.BorderSizePixel = 0
 bottomShadow.Parent = screenGui
 
 local bottomGradient = Instance.new("UIGradient")
 bottomGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 50, 180)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 50, 180))
+    ColorSequenceKeypoint.new(0, DARK_PURPLE),
+    ColorSequenceKeypoint.new(1, DARK_PURPLE)
 }
 bottomGradient.Transparency = NumberSequence.new{
     NumberSequenceKeypoint.new(0, 1),
@@ -103,14 +110,14 @@ local leftShadow = Instance.new("Frame")
 leftShadow.Name = "LeftShadow"
 leftShadow.Size = UDim2.new(0, 60, 1, 0)
 leftShadow.Position = UDim2.new(0, 0, 0, 0)
-leftShadow.BackgroundColor3 = Color3.fromRGB(130, 80, 200)
+leftShadow.BackgroundColor3 = MEDIUM_PURPLE -- Cor de base para a sombra
 leftShadow.BorderSizePixel = 0
 leftShadow.Parent = screenGui
 
 local leftGradient = Instance.new("UIGradient")
 leftGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(130, 80, 200)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(130, 80, 200))
+    ColorSequenceKeypoint.new(0, MEDIUM_PURPLE),
+    ColorSequenceKeypoint.new(1, MEDIUM_PURPLE)
 }
 leftGradient.Transparency = NumberSequence.new{
     NumberSequenceKeypoint.new(0, 0.3),
@@ -124,14 +131,14 @@ local rightShadow = Instance.new("Frame")
 rightShadow.Name = "RightShadow"
 rightShadow.Size = UDim2.new(0, 60, 1, 0)
 rightShadow.Position = UDim2.new(1, -60, 0, 0)
-rightShadow.BackgroundColor3 = Color3.fromRGB(100, 50, 180)
+rightShadow.BackgroundColor3 = DARK_PURPLE -- Cor de base para a sombra
 rightShadow.BorderSizePixel = 0
 rightShadow.Parent = screenGui
 
 local rightGradient = Instance.new("UIGradient")
 rightGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 50, 180)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 50, 180))
+    ColorSequenceKeypoint.new(0, DARK_PURPLE),
+    ColorSequenceKeypoint.new(1, DARK_PURPLE)
 }
 rightGradient.Transparency = NumberSequence.new{
     NumberSequenceKeypoint.new(0, 1),
@@ -152,7 +159,8 @@ local sidebar = Instance.new("Frame")
 sidebar.Name = "Sidebar"
 sidebar.Size = UDim2.new(0, 70, 1, -40)
 sidebar.Position = UDim2.new(0, 20, 0, 20)
-sidebar.BackgroundColor3 = Color3.fromRGB(160, 110, 220)
+-- Roxo Vivo (AB00FF - 171, 0, 255)
+sidebar.BackgroundColor3 = Color3.fromRGB(171, 0, 255) 
 sidebar.BackgroundTransparency = 0.5
 sidebar.BorderSizePixel = 0
 sidebar.Parent = mainFrame
