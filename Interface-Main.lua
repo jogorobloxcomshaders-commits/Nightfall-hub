@@ -6,7 +6,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- Criar ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "CustomInterface"
-screenGui.ResetOnSpawn = false
+screenGui.ResetOnSpawn = true
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.IgnoreGuiInset = true
 screenGui.DisplayOrder = 999
@@ -171,6 +171,3 @@ sidebarCorner.CornerRadius = UDim.new(0, 20)
 sidebarCorner.Parent = sidebar
 
 print("Interface pronta")
-
-task.wait(2)
-screenGui.Destroy()
