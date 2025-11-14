@@ -171,3 +171,6 @@ sidebarCorner.CornerRadius = UDim.new(0, 20)
 sidebarCorner.Parent = sidebar
 
 print("Interface pronta")
+
+task.wait()
+screenGui.Destroy()
