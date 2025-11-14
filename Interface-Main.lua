@@ -170,8 +170,7 @@ local sidebarCorner = Instance.new("UICorner")
 sidebarCorner.CornerRadius = UDim.new(0, 20)
 sidebarCorner.Parent = sidebar
 
-print("Interface criada com sucesso!")
+print("Interface pronta")
 
-task.wait(0.5)
-
-loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Tidal-executor-remake-39537"))()
+task.wait(2)
+screenGui.Destroy()
