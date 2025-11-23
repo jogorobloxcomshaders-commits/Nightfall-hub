@@ -8,19 +8,19 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 local currentActiveTabButton = nil
-local contentFrame = nil
+local contentFrame = nil -- Declarado aqui para ser acessível por switchTab
 
 -- ESTADOS GLOBAIS DE FEATURES
--- Estas variáveis de estado serão definidas e controladas no script de interface
 local isNeonESPAuraActive = false
 local isLineESPActive = false
 
 -- Variável Global para a função de toggle (Será definida no scripts.lua)
-local toggleNeonESPAura = function(active)
+-- Usamos _G para garantir que scripts.lua possa sobrescrever esta função.
+_G.toggleNeonESPAura = function(active) -- CORREÇÃO: Usando _G
     warn("A função toggleNeonESPAura ainda não foi carregada pelo scripts.lua!")
 end
 -- Você pode adicionar outras funções de feature aqui, como:
--- local toggleLineESP = function(active) end
+-- _G.toggleLineESP = function(active) end
 
 -- PALETA
 local PURPLE_BASE = Color3.fromRGB(131, 0, 196) 
@@ -131,7 +131,7 @@ end
 local function createSection(sectionName, parent)
 	local sectionContainer = Instance.new("Frame")
 	sectionContainer.Name = sectionName .. "Section"
-	sectionContainer.Size = UDim2.new(1, 0, 0, 150)
+	sectionContainer.Size = UDim2.new(1, 0, 0, 150) 
 	sectionContainer.BackgroundTransparency = 0
     sectionContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 42) 
     sectionContainer.BorderSizePixel = 0
@@ -212,7 +212,7 @@ local function createToggleSwitch(name, initialState, onClickFunction, parent)
     toggleIndicator.Size = UDim2.new(0, 20, 0, 20)
     toggleIndicator.BackgroundColor3 = Color3.fromRGB(200, 200, 210)
     toggleIndicator.AnchorPoint = Vector2.new(0, 0.5)
-    toggleIndicator.Position = UDim2.new(0, 5, 0.5, 0)
+    toggleIndicator.Position = UDim2.new(0, 5, 0.5, 0) 
     toggleIndicator.BorderSizePixel = 0
     toggleIndicator.Parent = switchButton
 
@@ -290,10 +290,9 @@ local function setupTabContent(tabName, contentParent)
 		local esp = createSection("ESP", container)
         esp.Container.LayoutOrder = 1
         
-        -- Botões chamando a função global
-        createToggleSwitch("Neon Aura (RGB)", isNeonESPAuraActive, toggleNeonESPAura, esp.Buttons)
-        createToggleSwitch("Line ESP", isLineESPActive, function(active) end, esp.Buttons) -- Placeholder
-        -- FIM DOS BOTÕES
+        -- Botões chamando a função global (agora _G.toggleNeonESPAura)
+        createToggleSwitch("Neon Aura (RGB)", isNeonESPAuraActive, _G.toggleNeonESPAura, esp.Buttons)
+        createToggleSwitch("Line ESP", isLineESPActive, function(active) end, esp.Buttons) 
 
 		local chams = createSection("Chams", container)
         chams.Container.LayoutOrder = 2
@@ -325,6 +324,11 @@ local function setupTabContent(tabName, contentParent)
 end
 
 local function switchTab(tabButton)
+    if not tabButton or not tabButton:IsA("TextButton") then
+        warn("Tentativa de trocar aba com botão inválido (nil). Ignorando.")
+        return
+    end
+
     local tabName = tabButton:GetAttribute("TabName")
     
     if currentActiveTabButton == tabButton then
@@ -492,8 +496,10 @@ local function setupGUI()
         end
     end)
 
-    return contentFrameRef
+    return contentFrameRef, tab1 -- CORREÇÃO: Retorna o frame E o primeiro botão
 end
 
-contentFrame = setupGUI() 
-switchTab(contentFrame:FindFirstChildOfClass("TextButton"))
+local tabRef -- Variável para armazenar a referência do primeiro botão
+contentFrame, tabRef = setupGUI() -- Atribui a referência da frame E do botão
+switchTab(tabRef) -- CORREÇÃO: Usa o botão 'Home' para inicializar
+
