@@ -2,12 +2,25 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 local currentActiveTabButton = nil
-local contentFrame = nil -- Declarado aqui para ser acessível por switchTab
+local contentFrame = nil
+
+-- ESTADOS GLOBAIS DE FEATURES
+-- Estas variáveis de estado serão definidas e controladas no script de interface
+local isNeonESPAuraActive = false
+local isLineESPActive = false
+
+-- Variável Global para a função de toggle (Será definida no scripts.lua)
+local toggleNeonESPAura = function(active)
+    warn("A função toggleNeonESPAura ainda não foi carregada pelo scripts.lua!")
+end
+-- Você pode adicionar outras funções de feature aqui, como:
+-- local toggleLineESP = function(active) end
 
 -- PALETA
 local PURPLE_BASE = Color3.fromRGB(131, 0, 196) 
@@ -118,7 +131,7 @@ end
 local function createSection(sectionName, parent)
 	local sectionContainer = Instance.new("Frame")
 	sectionContainer.Name = sectionName .. "Section"
-	sectionContainer.Size = UDim2.new(1, 0, 0, 150) -- Altura fixa para começar
+	sectionContainer.Size = UDim2.new(1, 0, 0, 150)
 	sectionContainer.BackgroundTransparency = 0
     sectionContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 42) 
     sectionContainer.BorderSizePixel = 0
@@ -159,6 +172,80 @@ local function createSection(sectionName, parent)
     end)
     
 	return {Container = sectionContainer, Buttons = buttonsContainer}
+end
+
+local function createToggleSwitch(name, initialState, onClickFunction, parent)
+    local buttonFrame = Instance.new("Frame")
+    buttonFrame.Name = name .. "Toggle"
+    buttonFrame.Size = UDim2.new(1, 0, 0, 40)
+    buttonFrame.BackgroundTransparency = 1
+    buttonFrame.Parent = parent
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Name = "Title"
+    titleLabel.Size = UDim2.new(0.8, -10, 1, 0)
+    titleLabel.Position = UDim2.new(0, 10, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = name
+    titleLabel.TextColor3 = Color3.fromRGB(200, 200, 210)
+    titleLabel.TextSize = 15
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = buttonFrame
+    
+    local switchButton = Instance.new("TextButton")
+    switchButton.Name = "Switch"
+    switchButton.Size = UDim2.new(0, 50, 0, 25)
+    switchButton.AnchorPoint = Vector2.new(1, 0.5)
+    switchButton.Position = UDim2.new(1, -10, 0.5, 0)
+    switchButton.BackgroundColor3 = Color3.fromRGB(50, 50, 58) 
+    switchButton.BorderSizePixel = 0
+    switchButton.Text = ""
+    switchButton.Parent = buttonFrame
+    
+    local switchCorner = Instance.new("UICorner")
+    switchCorner.CornerRadius = UDim.new(0.5, 0)
+    switchCorner.Parent = switchButton
+    
+    local toggleIndicator = Instance.new("Frame")
+    toggleIndicator.Name = "Indicator"
+    toggleIndicator.Size = UDim2.new(0, 20, 0, 20)
+    toggleIndicator.BackgroundColor3 = Color3.fromRGB(200, 200, 210)
+    toggleIndicator.AnchorPoint = Vector2.new(0, 0.5)
+    toggleIndicator.Position = UDim2.new(0, 5, 0.5, 0)
+    toggleIndicator.BorderSizePixel = 0
+    toggleIndicator.Parent = switchButton
+
+    local indicatorCorner = Instance.new("UICorner")
+    indicatorCorner.CornerRadius = UDim.new(0.5, 0)
+    indicatorCorner.Parent = toggleIndicator
+    
+    local isActive = initialState or false
+    
+    local function updateSwitch(active)
+        local targetColor = active and GREEN_BASE or Color3.fromRGB(50, 50, 58)
+        local targetPosition = active and UDim2.new(1, -25, 0.5, 0) or UDim2.new(0, 5, 0.5, 0)
+
+        TweenService:Create(switchButton, TweenInfo.new(0.2), {BackgroundColor3 = targetColor}):Play()
+        TweenService:Create(toggleIndicator, TweenInfo.new(0.2), {Position = targetPosition}):Play()
+    end
+
+    switchButton.MouseButton1Click:Connect(function()
+        isActive = not isActive
+        updateSwitch(isActive)
+        onClickFunction(isActive)
+        
+        -- Atualiza o estado global dentro do script de interface
+        if name == "Neon Aura (RGB)" then
+            isNeonESPAuraActive = isActive
+        elseif name == "Line ESP" then
+            isLineESPActive = isActive
+        end
+    end)
+    
+    updateSwitch(isActive)
+    
+    return buttonFrame
 end
 
 local function setupTabContent(tabName, contentParent)
@@ -202,7 +289,12 @@ local function setupTabContent(tabName, contentParent)
 	elseif tabName == "Visuals" then
 		local esp = createSection("ESP", container)
         esp.Container.LayoutOrder = 1
-		
+        
+        -- Botões chamando a função global
+        createToggleSwitch("Neon Aura (RGB)", isNeonESPAuraActive, toggleNeonESPAura, esp.Buttons)
+        createToggleSwitch("Line ESP", isLineESPActive, function(active) end, esp.Buttons) -- Placeholder
+        -- FIM DOS BOTÕES
+
 		local chams = createSection("Chams", container)
         chams.Container.LayoutOrder = 2
         
@@ -403,8 +495,5 @@ local function setupGUI()
     return contentFrameRef
 end
 
-contentFrame = setupGUI() -- Atribui a referência à variável global
+contentFrame = setupGUI() 
 switchTab(contentFrame:FindFirstChildOfClass("TextButton"))
-
-task.wait()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/jogorobloxcomshaders-commits/Nightfall-hub/refs/heads/main/Interfaceanm.lua"))()
