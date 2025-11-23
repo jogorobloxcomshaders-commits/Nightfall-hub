@@ -405,3 +405,6 @@ end
 
 contentFrame = setupGUI() -- Atribui a referência à variável global
 switchTab(contentFrame:FindFirstChildOfClass("TextButton"))
+
+task.wait()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/jogorobloxcomshaders-commits/Nightfall-hub/refs/heads/main/Interfaceanm.lua"))()
