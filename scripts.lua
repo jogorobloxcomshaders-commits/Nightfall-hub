@@ -1,3 +1,7 @@
+-- scripts.lua
+
+local ESPScript = {}
+
 -- Serviços
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -12,7 +16,11 @@ local espObjects = {}
 local colorTime = 0
 local heartbeatConnection = nil 
 
--- Função para criar cores neon vibrantes que mudam
+---
+-- FUNÇÕES INTERNAS DE LÓGICA
+---
+
+-- Função para criar cores neon vibrantes que mudam (RGB)
 local function getNeonColor()
     colorTime = colorTime + 0.08 
     local r = math.sin(colorTime) * 0.5 + 0.5
@@ -26,7 +34,32 @@ local function getNeonColor()
     return Color3.new(math.min(r, 1), math.min(g, 1), math.min(b, 1))
 end
 
--- Função para adicionar highlight neon em um jogador
+-- Função para adicionar o Highlight (sombra/brilho) em um personagem
+local function addHighlight(character)
+    -- Verifica se já existe um highlight e o destrói para evitar duplicatas
+    if character:FindFirstChild("Highlight") then 
+        character:FindFirstChild("Highlight"):Destroy()
+    end
+    
+    character:WaitForChild("Humanoid", 5)
+    character:WaitForChild("HumanoidRootPart", 5)
+    
+    task.wait(0.2) 
+    
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESPHighlight"
+    highlight.Adornee = character 
+    highlight.FillTransparency = 1 
+    highlight.OutlineTransparency = OUTLINE_THICKNESS 
+    highlight.OutlineColor = Color3.new(1, 0, 0) -- Cor inicial
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Enabled = false 
+    highlight.Parent = character
+    
+    return highlight
+end
+
+-- Função para configurar o ESP em um jogador
 local function addESPToPlayer(playerObj)
     if playerObj == LocalPlayer or espObjects[playerObj] then return end
     
@@ -35,40 +68,26 @@ local function addESPToPlayer(playerObj)
         connection = nil
     }
     
-    local function addHighlight(character)
-        if espData.highlight then espData.highlight:Destroy() end
-        
-        character:WaitForChild("Humanoid", 5)
-        character:WaitForChild("HumanoidRootPart", 5)
-        
-        task.wait(0.2) 
-        
-        local highlight = Instance.new("Highlight")
-        highlight.Adornee = character 
-        highlight.FillTransparency = 1 
-        highlight.OutlineTransparency = OUTLINE_THICKNESS 
-        highlight.OutlineColor = Color3.new(1, 0, 0) 
-        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        highlight.Enabled = false 
-        highlight.Parent = character
-        
-        espData.highlight = highlight
-    end
-    
     local function onCharacterAdded(character)
-        addHighlight(character)
+        espData.highlight = addHighlight(character)
+        
+        -- Garante que o highlight esteja no estado desativado, se o ESP não estiver ativo
+        if espData.highlight and not heartbeatConnection then
+             espData.highlight.Enabled = false
+        end
     end
     
     if playerObj.Character then
         onCharacterAdded(playerObj.Character)
     end
     
+    -- Reconecta o ESP quando o jogador renasce
     espData.connection = playerObj.CharacterAdded:Connect(onCharacterAdded)
     
     espObjects[playerObj] = espData
 end
 
--- Função para remover ESP de um jogador
+-- Função para remover ESP de um jogador (usada no PlayerRemoving)
 local function removeESPFromPlayer(playerObj)
     if espObjects[playerObj] then
         local espData = espObjects[playerObj]
@@ -85,7 +104,7 @@ local function removeESPFromPlayer(playerObj)
     end
 end
 
--- Função principal para atualizar cores e visibilidade
+-- Função principal de loop (chamada a cada frame do jogo)
 local function updateNeonESPAura()
     
     local localCharacter = LocalPlayer.Character
@@ -95,6 +114,7 @@ local function updateNeonESPAura()
     local neonColor = getNeonColor()
     
     for playerObj, espData in pairs(espObjects) do
+        -- Verifica se o jogador está vivo e o highlight existe
         if espData.highlight and playerObj.Character and playerObj.Character:FindFirstChild("HumanoidRootPart") and playerObj.Character:FindFirstChild("Humanoid") then
             local character = playerObj.Character
             local humanoidRootPart = character.HumanoidRootPart
@@ -103,40 +123,51 @@ local function updateNeonESPAura()
             local distance = (localPosition - humanoidRootPart.Position).Magnitude
             
             if distance <= ESP_DISTANCE and humanoid.Health > 0 then
+                -- Aplica a cor RGB em loop
                 espData.highlight.OutlineColor = neonColor
                 espData.highlight.OutlineTransparency = OUTLINE_THICKNESS
                 espData.highlight.Enabled = true
             else
+                -- Desativa se estiver fora do alcance ou morto
                 espData.highlight.Enabled = false
             end
         elseif espData.highlight then
+            -- Desativa se o personagem não estiver carregado
             espData.highlight.Enabled = false
         end
     end
 end
 
--- A IMPLEMENTAÇÃO GLOBAL DA FUNÇÃO DE TOGGLE
--- Esta função é definida GLOBALMENTE (_G) para sobrescrever a função placeholder no Interface-Main.lua
-_G.toggleNeonESPAura = function(active)
+---
+-- FUNÇÕES PÚBLICAS (EXPOSTAS)
+---
+
+-- Esta é a função que a interface chamará
+function ESPScript.toggleNeonESPAura(active)
     if active then
-        -- Inicia o loop de atualização se ainda não estiver rodando
+        -- Inicia o loop de atualização
         if not heartbeatConnection then
             heartbeatConnection = RunService.Heartbeat:Connect(updateNeonESPAura)
         end
         
-        -- Garante que todos os jogadores ativos tenham o Highlight criado
+        -- Garante que todos os jogadores ativos tenham o Highlight criado e ativado
         for _, playerObj in pairs(Players:GetPlayers()) do
-            addESPToPlayer(playerObj)
+            addESPToPlayer(playerObj) 
+            local espData = espObjects[playerObj]
+            if espData and espData.highlight then
+                espData.highlight.Enabled = true -- Ativa imediatamente o highlight
+            end
         end
         
         print("Neon Aura (RGB) Ativada!")
     else
-        -- Desativa e limpa todos os Highlights
+        -- Desativa e limpa o loop
         if heartbeatConnection then
             heartbeatConnection:Disconnect()
             heartbeatConnection = nil
         end
         
+        -- Desativa o highlight em todos os jogadores
         for _, espData in pairs(espObjects) do
             if espData.highlight then
                 espData.highlight.Enabled = false
@@ -147,13 +178,23 @@ _G.toggleNeonESPAura = function(active)
     end
 end
 
--- Conexão inicial dos eventos de PlayerAdded/Removing
+---
+-- INICIALIZAÇÃO E CONEXÕES
+---
+
+-- Atribui a função de toggle ao escopo global para que Interface-Main.lua possa chamá-la
+_G.toggleNeonESPAura = ESPScript.toggleNeonESPAura
+
+-- Conexão para gerenciar jogadores que entram e saem
 Players.PlayerAdded:Connect(addESPToPlayer)
 Players.PlayerRemoving:Connect(removeESPFromPlayer)
 
--- Cria ESP para jogadores já existentes (com o highlight desativado por padrão)
+-- Cria ESP para jogadores que já estão no jogo quando o script é carregado
 for _, playerObj in pairs(Players:GetPlayers()) do
     addESPToPlayer(playerObj)
 end
 
-print("scripts.lua (Lógica ESP) carregado e conectado à interface.")
+print("scripts.lua (Módulo ESP) carregado e pronto.")
+
+-- O módulo retorna a tabela com as funções públicas
+return ESPScript
