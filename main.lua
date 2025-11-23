@@ -1,58 +1,50 @@
---[[
-    ======================================
-    ||       NIGHTFALL HUB - Loader       ||
-    ||           Arquivo: main.lua        ||
-    ======================================
-    
-    Este script carrega a Interface e a Lógica (Scripts) do GitHub
-    na ordem correta para garantir que as funções globais se conectem.
-]]
+-- main.lua (Este é o script que você injeta no executor)
 
-local INTERFACE_URL = "https://raw.githubusercontent.com/jogorobloxcomshaders-commits/Nightfall-hub/refs/heads/main/Interface-Main.lua"
-local SCRIPTS_URL = "https://raw.githubusercontent.com/jogorobloxcomshaders-commits/Nightfall-hub/refs/heads/main/scripts.lua"
-
-local HttpService = game:GetService("HttpService")
-
-local function loadAndExecuteScript(url, scriptName)
-    local success, content = pcall(function()
-        -- Tenta obter o conteúdo do script
-        return game:HttpGet(url, true) 
-    end)
+-- === CONFIGURAÇÃO DO CARREGADOR ===
+-- NOTA: Substitua 'loadfile' ou 'readfile' pela função real do seu executor 
+-- que lê o conteúdo de um arquivo como uma string (ex: readfile, getfenv().loadfile, etc.)
+local function loadFileContent(fileName)
+    -- Exemplo Padrão de Executor:
+    -- return readfile(fileName) 
     
-    if not success or not content or content:sub(1, 10) == "404: Not Found" then
-        warn("❌ Falha ao carregar " .. scriptName .. " do link: " .. url)
-        return false
-    end
-    
-    -- Compila a string de código em uma função
-    local executeFunction, compileError = loadstring(content)
-    
-    if not executeFunction then
-        warn("❌ Erro de compilação em " .. scriptName .. ": " .. (compileError or "Desconhecido"))
-        return false
-    end
-    
-    -- Executa a função compilada
-    local execSuccess, execError = pcall(executeFunction)
-    
-    if execSuccess then
-        print("✅ " .. scriptName .. " carregado e executado com sucesso.")
-        return true
-    else
-        warn("❌ Erro de execução em " .. scriptName .. ": " .. (execError or "Desconhecido"))
-        return false
-    end
+    -- Exemplo Simples (Ajuste conforme o seu exploit):
+    return "print('ERRO: Função de leitura não implementada para: "..fileName.."')"
 end
 
--- =========================================
--- Sequência de carregamento
--- 1. Carrega a Interface primeiro (cria a GUI e a função placeholder)
-print("Iniciando o carregamento do Nightfall Hub...")
-local interfaceLoaded = loadAndExecuteScript(INTERFACE_URL, "Interface-Main.lua")
+-- Tabela para armazenar os módulos carregados
+local M = {}
 
-if interfaceLoaded then
-    -- 2. Carrega os Scripts em seguida (define a lógica e a função de toggle)
-    loadAndExecuteScript(SCRIPTS_URL, "scripts.lua")
-end
+-- === CARREGAMENTO E EXECUÇÃO DOS MÓDULOS ===
 
-print("Processo de carregamento concluído.")
+-- 1. Carrega o Módulo de Configuração (Interface-Config.lua)
+local configContent = loadFileContent("Interface-Config.lua") 
+local configChunk = loadstring(configContent)
+M.Config = configChunk()
+_G.CONFIG = M.Config -- Expor ao global, se necessário
+
+print("Configurações carregadas.")
+
+-- 2. Carrega o Módulo Builder (Interface-Builder.lua)
+-- O Builder precisa do Config, então passamos o M.Config para o init()
+local builderContent = loadFileContent("Interface-Builder.lua") 
+local builderChunk = loadstring(builderContent)
+M.Builder = builderChunk()
+M.Builder:init(M.Config)
+
+print("Builder carregado.")
+
+-- 3. Carrega o Módulo de Lógica (scripts.lua)
+local scriptsContent = loadFileContent("scripts.lua") 
+local scriptsChunk = loadstring(scriptsContent)
+M.Scripts = scriptsChunk()
+-- O scripts.lua define as funções globais (_G) para a interface.
+
+print("Lógica (scripts.lua) carregada e funções globais definidas.")
+
+-- 4. Carrega o Módulo Principal da Interface (Interface-Main.lua)
+-- O Main agora usa as variáveis globais CONFIG e BUILDER em vez de require
+local mainContent = loadFileContent("Interface-Main.lua")
+local mainChunk = loadstring(mainContent)
+mainChunk() 
+
+print("Interface carregada e executada com sucesso!")
