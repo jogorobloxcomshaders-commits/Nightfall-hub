@@ -3,10 +3,6 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 
--- Variáveis de Estado (Assumindo que estão disponíveis globalmente ou no escopo de execução)
--- Se você estiver usando Loadstring, o scripts.lua será executado logo após o interface.lua,
--- mantendo variáveis globais como 'toggleNeonESPAura' acessíveis.
-
 -- Configurações
 local ESP_DISTANCE = 2000
 local OUTLINE_THICKNESS = 0.15 
@@ -91,8 +87,6 @@ end
 
 -- Função principal para atualizar cores e visibilidade
 local function updateNeonESPAura()
-    -- Não é necessário verificar o estado 'isNeonESPAuraActive' aqui, pois o heartbeatConnection
-    -- só estará ativo se o estado global no 'interface.lua' estiver 'true' (definido na função de toggle).
     
     local localCharacter = LocalPlayer.Character
     if not localCharacter or not localCharacter:FindFirstChild("HumanoidRootPart") then return end
@@ -122,7 +116,7 @@ local function updateNeonESPAura()
 end
 
 -- A IMPLEMENTAÇÃO GLOBAL DA FUNÇÃO DE TOGGLE
--- Esta função é definida GLOBALMENTE para sobrescrever a função placeholder no interface.lua
+-- Esta função é definida GLOBALMENTE (_G) para sobrescrever a função placeholder no Interface-Main.lua
 _G.toggleNeonESPAura = function(active)
     if active then
         -- Inicia o loop de atualização se ainda não estiver rodando
@@ -163,4 +157,3 @@ for _, playerObj in pairs(Players:GetPlayers()) do
 end
 
 print("scripts.lua (Lógica ESP) carregado e conectado à interface.")
-
